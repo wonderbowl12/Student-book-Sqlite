@@ -17,12 +17,12 @@ def add_student():
     school_id = input('School ID: ')
     # id = input('id?')
 
-    confirm = input('Confirm this information? (Yes or No): ')
-    if confirm.lower() == 'yes' or 'n':
+    confirm = confirm_action()
+    if confirm is True:
         cursor.execute('INSERT INTO name(school,name,phone) VALUES(?,?,?)', (school_id.capitalize(), name, phone))
         connection.commit()
         menu()
-    elif confirm.lower() == 'no' or 'n':
+    if confirm is False:
         add_student()
 
 #Finds student
@@ -31,18 +31,11 @@ def find_student():
         school_id = input('Input student ID: ')
         cursor.execute('SELECT*FROM name WHERE school=?', (school_id,))
         row = cursor.fetchone()
-        id = row['id']
-        school = row['school']
-        name = row['name']
-        phone = row['phone']
-        print('ID:' + str(id))
-        print("School ID: " + str(school))
-        print("Name: " + str(name))
-        print("Phone number: " + str(phone))
-        another = input('Want to look up another student? (1 or 2): ')
-        if another is '1':
+        grab_information(row)
+        another = input('Want to look up another student? (Yes or No): ')
+        if another.lower() is 'yes':
             find_student()
-        elif another is '2':
+        elif another.lower() is 'no':
             menu()
     except:
         x = input('Sorry the student was not found, do you want to try again? ')
@@ -89,23 +82,16 @@ def update_information():
 
 
 def delete_student():
-    school_id = input('What student do you want to DELETE?: ')
+    school_id = input('Enter student ID to delete: ')
     cursor.execute('SELECT*FROM name WHERE school=?', (school_id,))
     row = cursor.fetchone()
-    id = row['id']
-    school = row['school']
-    name = row['name']
-    phone = row['phone']
-    print('ID:' + str(id))
-    print("School ID: " + str(school))
-    print("Name: " + str(name))
-    print("Phone number: " + str(phone))
-    test = input('Are you sure? (Yes or No):')
-    if test.lower() == 'yes' or 'y':
-        cursor.execute('DELETE FROM name WHERE school=?', (school_id))
+    grab_information(row)
+    confirm = confirm_action()
+    if confirm is True:
+        cursor.execute('DELETE FROM name WHERE school=?', (school_id,))
         connection.commit()
         menu()
-    if test.lower == 'no' or 'n':
+    if confirm is False:
         delete_student()
 
 #Delete all and list all use the same loop, creates cursor and uses fetchall to collect all objects.
@@ -120,26 +106,16 @@ def delete_all_students():
     for id in id_db:
         cursor.execute('SELECT*FROM name WHERE id=?', (id,))
         row = cursor.fetchone()
-        id = row['id']
-        school = row['school']
-        name = row['name']
-        phone = row['phone']
-        print('\n')
-        print('ID:' + str(id))
-        print("School ID: " + str(school))
-        print("Name: " + str(name))
-        print("Phone number: " + str(phone))
-
-        confirm = input('Are you sure you want to delete these students? (Yes or No)')
-        if confirm.lower() == 'yes' or 'y':
+        grab_information(row)
+        confirm = confirm_action()
+        if confirm is True:
             for id in id_db:
                 cursor.execute('DELETE FROM name WHERE id=?', (id,))
                 connection.commit()
                 print('All entries were deleted.\n')
-        elif confirm.lower() == 'no' or 'n':
+        elif confirm is False:
             menu()
 
-    menu()
 
 
 def list_all():
@@ -155,17 +131,27 @@ def list_all():
         for id in id_db:
             cursor.execute('SELECT*FROM name WHERE id=?', (id,))
             row = cursor.fetchone()
-            id = row['id']
-            school = row['school']
-            name = row['name']
-            phone = row['phone']
-            print('ID:' + str(id))
-            print("School ID: " + str(school))
-            print("Name: " + str(name))
-            print("Phone number: " + str(phone))
+            grab_information(row)
 
     menu()
 
+def grab_information(row):
+    id = row['id']
+    school = row['school']
+    name = row['name']
+    phone = row['phone']
+    print('\n')
+    print('ID:' + str(id))
+    print("School ID: " + str(school))
+    print("Name: " + str(name))
+    print("Phone number: " + str(phone))
+
+def confirm_action():
+    confirm = input('Are you sure? (Yes or No) ')
+    if confirm.lower() == 'yes' or 'y':
+        return True
+    elif confirm.lower() == 'no' or 'n':
+        return False
 
 def menu():
     print('\n')
@@ -176,7 +162,7 @@ def menu():
           '\n 4. Delete a Student'
           '\n 5. List all Students'
           '\n 6. Delete all Students'
-          '\n 7. End Program')
+          '\n END. End Program', "\r")
     menu_choice = input()
     if menu_choice == '1':
         find_student()
@@ -190,7 +176,7 @@ def menu():
         list_all()
     if menu_choice == '6':
         delete_all_students()
-    if menu_choice == '7':
+    if menu_choice == 'END':
         quit()
 
 
