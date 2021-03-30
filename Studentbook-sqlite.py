@@ -4,13 +4,14 @@ connection = sqlite3.connect('phonebook.db')
 connection.row_factory = sqlite3.Row
 cursor = connection.cursor()
 
-#Add password system
-#Add more features for ease of access
-#Clean up repetitive code
-#GUI?
+
+# Add password system
+# Add more features for ease of access
+# Clean up repetitive code
+# GUI?
 
 
-#Function adds a new student
+# Function adds a new student
 def add_student():
     name = input('Name of Student you would like to add: ')
     phone = input('Phone number?: ')
@@ -23,19 +24,22 @@ def add_student():
         connection.commit()
         menu()
     if confirm is False:
-        add_student()
+        print('Process Cancelled')
+        menu()
 
-#Finds student
+
+# Finds student
 def find_student():
     try:
         school_id = input('Input student ID: ')
         cursor.execute('SELECT*FROM name WHERE school=?', (school_id,))
         row = cursor.fetchone()
         grab_information(row)
+        print('\n')
         another = input('Want to look up another student? (Yes or No): ')
-        if another.lower() is 'yes':
+        if another.lower() == 'yes':
             find_student()
-        elif another.lower() is 'no':
+        elif another.lower() == 'no':
             menu()
     except:
         x = input('Sorry the student was not found, do you want to try again? ')
@@ -48,6 +52,7 @@ def find_student():
             find_student()
 
 
+# updates information
 def update_information():
     id_input = input('What is the entry you want to update? (Student ID): \n')
 
@@ -62,25 +67,17 @@ def update_information():
     found_num = row['phone']
     found_id = row['school']
     if update_choice == 1:
-        cursor.execute('UPDATE name SET name = ? WHERE name = ?', (input('New Name:  '), found_name))
-        connection.commit()
-        print('Name has been updated! \n')
-        menu()
+        update_choice_found(1, found_name)
     elif update_choice == 2:
-        cursor.execute('UPDATE name SET phone = ? WHERE phone = ?', (input('New Number: '), found_num))
-        connection.commit()
-        print('Number has been updated! \n')
-        menu()
+        update_choice_found(2, found_num)
     elif update_choice == 3:
-        cursor.execute('UPDATE name SET school = ? WHERE school = ?', (input('New ID: '), found_id))
-        connection.commit()
-        print('ID has been updated! \n')
-        menu()
+        update_choice_found(3, found_id)
     else:
         print('Error')
         update_information()
 
 
+# Deletes a single student
 def delete_student():
     school_id = input('Enter student ID to delete: ')
     cursor.execute('SELECT*FROM name WHERE school=?', (school_id,))
@@ -94,36 +91,43 @@ def delete_student():
     if confirm is False:
         delete_student()
 
-#Delete all and list all use the same loop, creates cursor and uses fetchall to collect all objects.
-#Loop appends objects to id_db which is then used in another loop to get objects from database
 
+# Delete all and list all use the same loop, creates cursor and uses fetchall to collect all objects.
+# Loop appends objects to id_db which is then used in another loop to get objects from database
 def delete_all_students():
+    list_all()
+    confirm = confirm_action()
+    id_db = fetchall()
+    if confirm is True:
+        for id in id_db:
+            cursor.execute('DELETE FROM name WHERE id=?', (id,))
+            connection.commit()
+            print('All entries were deleted.\n')
+
+    elif confirm is False:
+        print('Process cancelled')
+    menu()
+
+
+# used to list all students
+def list_all_students():
+    list_all()
+    menu()
+
+
+# grabs IDs from db file, very important
+def fetchall():
     cursor.execute('SELECT*FROM name')
     rows = cursor.fetchall()
     id_db = []
     for row in rows:
         id_db.append(row[0])
-    for id in id_db:
-        cursor.execute('SELECT*FROM name WHERE id=?', (id,))
-        row = cursor.fetchone()
-        grab_information(row)
-        confirm = confirm_action()
-        if confirm is True:
-            for id in id_db:
-                cursor.execute('DELETE FROM name WHERE id=?', (id,))
-                connection.commit()
-                print('All entries were deleted.\n')
-        elif confirm is False:
-            menu()
+    return id_db
 
 
-
+# lists all students and information
 def list_all():
-    cursor.execute('SELECT*FROM name')
-    rows = cursor.fetchall()
-    id_db = []
-    for row in rows:
-        id_db.append(row[0])
+    id_db = fetchall()
     if len(id_db) == 0:
         print('There are no entries.\n')
         menu()
@@ -133,8 +137,8 @@ def list_all():
             row = cursor.fetchone()
             grab_information(row)
 
-    menu()
 
+# grabs information from db to print
 def grab_information(row):
     id = row['id']
     school = row['school']
@@ -146,23 +150,46 @@ def grab_information(row):
     print("Name: " + str(name))
     print("Phone number: " + str(phone))
 
+
+# used throughout the program to confrim an action
+
 def confirm_action():
     confirm = input('Are you sure? (Yes or No) ')
-    if confirm.lower() == 'yes' or 'y':
+    if confirm.lower() == 'yes' or confirm.lower() == 'y':
         return True
-    elif confirm.lower() == 'no' or 'n':
+    elif confirm.lower() == 'no' or confirm.lower() == 'n':
         return False
+
+
+# Used in Update information function
+def update_choice_found(x, found):
+    if x == 1:
+        cursor.execute('UPDATE name SET name = ? WHERE name = ?', (input('New Name:  '), found))
+        connection.commit()
+        print('Name has been updated! \n')
+        menu()
+    if x == 2:
+        cursor.execute('UPDATE name SET phone = ? WHERE phone = ?', (input('New Number: '), found))
+        connection.commit()
+        print('Number has been updated! \n')
+        menu()
+    if x == 3:
+        cursor.execute('UPDATE name SET school = ? WHERE school = ?', (input('New ID: '), found))
+        connection.commit()
+        print('ID has been updated! \n')
+        menu()
+
 
 def menu():
     print('\n')
-    print('Welcome to da STUDENT PHONEBOOK, what do you want?\n'
+    print(' Welcome to da STUDENT PHONEBOOK, what do you want?\n'
           '\n 1. Find a Student'
           '\n 2. Add a Student'
           '\n 3. Update Student Information'
           '\n 4. Delete a Student'
           '\n 5. List all Students'
           '\n 6. Delete all Students'
-          '\n END. End Program', "\r")
+          '\n END. End Program \r')
     menu_choice = input()
     if menu_choice == '1':
         find_student()
@@ -173,10 +200,11 @@ def menu():
     if menu_choice == '4':
         delete_student()
     if menu_choice == '5':
-        list_all()
+        list_all_students()
     if menu_choice == '6':
         delete_all_students()
     if menu_choice == 'END':
+        print('Goodbye!')
         quit()
 
 
