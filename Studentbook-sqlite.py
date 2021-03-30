@@ -132,6 +132,7 @@ def list_all():
         print('There are no entries.\n')
         menu()
     else:
+        print('>>>Here are the entries<<<')
         for id in id_db:
             cursor.execute('SELECT*FROM name WHERE id=?', (id,))
             row = cursor.fetchone()
@@ -144,11 +145,11 @@ def grab_information(row):
     school = row['school']
     name = row['name']
     phone = row['phone']
-    print('\n')
     print('ID:' + str(id))
     print("School ID: " + str(school))
     print("Name: " + str(name))
     print("Phone number: " + str(phone))
+    print('===================================================')
 
 
 # used throughout the program to confrim an action
@@ -181,15 +182,18 @@ def update_choice_found(x, found):
 
 
 def menu():
+
     print('\n')
     print(' Welcome to da STUDENT PHONEBOOK, what do you want?\n'
+          '==================================================='
           '\n 1. Find a Student'
           '\n 2. Add a Student'
           '\n 3. Update Student Information'
           '\n 4. Delete a Student'
           '\n 5. List all Students'
           '\n 6. Delete all Students'
-          '\n END. End Program \r')
+          '\n END. End Program\n'
+          '===================================================')
     menu_choice = input()
     if menu_choice == '1':
         find_student()
